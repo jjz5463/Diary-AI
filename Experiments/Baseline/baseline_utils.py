@@ -77,7 +77,7 @@ def analyze_writer_image(image_path, api_key):
 def generate_comic_book(diary_text, writer_description, num_pages=4):
     pipe = AutoPipelineForText2Image.from_pretrained(
         "stabilityai/sdxl-turbo",
-        #torch_dtype=torch.float16,
+        torch_dtype=torch.float16,
         variant="fp16",
         cache_dir="./SDXL-Turbo"
     )
