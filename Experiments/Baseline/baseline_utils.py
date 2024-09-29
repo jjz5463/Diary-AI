@@ -5,10 +5,10 @@ import io
 import google.generativeai as genai
 from diffusers import AutoPipelineForText2Image
 import torch
-
+import os
 
 # Utilize the Google Cloud Vision API to recognize text in the
-# input images (diary images), https://cloud.google.com/vision.
+# input input_images (diary input_images), https://cloud.google.com/vision.
 def detect_text_in_image(image_path, credentials_path):
     # Load the service account key from the credentials JSON file
     credentials = service_account.Credentials.from_service_account_file(credentials_path)
@@ -66,22 +66,23 @@ def analyze_writer_image(image_path, api_key):
     model = genai.GenerativeModel("gemini-1.5-flash")
     myfile = genai.upload_file(image_path)
     result = model.generate_content(
-        [myfile, "\n\n", "Can you give a textual description of the image?"]
+        [myfile, "\n\n", "Can you give a very short description of the person in the image?"]
     )
     return result.text
 
 
 # Now that you have text from the diary and text describing the diary writer,
 # you can utilize the SDXL-Turbo stable diffusion model to generate
-# images https://huggingface.co/stabilityai/sdxl-turbo.
-# You can try to output several images for a diary entry. Analyze how accurate the results,
+# input_images https://huggingface.co/stabilityai/sdxl-turbo.
+# You can try to output several input_images for a diary entry. Analyze how accurate the results,
 # and think about what could be improved.
-def generate_image(diary_text, writer_description):
+def generate_comic_book(diary_text, writer_description, num_pages=4):
     pipe = AutoPipelineForText2Image.from_pretrained(
         "stabilityai/sdxl-turbo",
         torch_dtype=torch.float16,
         variant="fp16",
-        cache_dir="./SDXL-Turbo")
+        cache_dir="./SDXL-Turbo"
+    )
 
     # Check for available device: CUDA, MPS, or CPU
     if torch.cuda.is_available():
@@ -97,11 +98,28 @@ def generate_image(diary_text, writer_description):
     # Move the model to the selected device
     pipe = pipe.to(device)
 
-    # Generate the image with a simple prompt
-    prompt = f'Writer Description: {writer_description} \n\n Diary: {diary_text}'
-    print(prompt)
-    image = pipe(prompt=prompt, num_inference_steps=1, guidance_scale=0.0).images[0]
+    # Create a directory to store the comic book input_images
+    os.makedirs("comic_book", exist_ok=True)
 
-    # Save the generated image
-    image.save("generated_image.png")
+    # Split diary text into multiple segments/scenes for comic book pages
+    diary_scenes = diary_text.split('.')[:num_pages]  # Split by periods, limiting to `num_pages`
+
+    # Iterate over each scene, generating a page for each one
+    for i, scene in enumerate(diary_scenes):
+        prompt = (f'Comic Book Style: \n'
+                  f'Actor Description: {writer_description} \n'
+                  f'Diary Scene: {scene.strip()}\n'
+                  f'Generate an cartoon image to represent this diary scene.')
+
+        print(f"Generating comic page {i + 1} with prompt:\n{prompt}\n")
+
+        # Generate the image
+        image = pipe(prompt=prompt, num_inference_steps=30, guidance_scale=7.5).images[0]
+
+        # Save the generated image
+        image_path = f"comic_book/page_{i + 1}.png"
+        image.save(image_path)
+        print(f"Page {i + 1} saved as {image_path}")
+
+    print("Comic book generation complete!")
 
