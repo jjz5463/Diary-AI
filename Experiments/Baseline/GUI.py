@@ -49,7 +49,7 @@ if uploaded_diary and uploaded_writer_image:
 
     # Generate the comic book based on the summaries
     st.write("Generating comic book images...")
-    generate_comic_book(summarized_text, writer_summary, num_pages=5)
+    generate_comic_book(summarized_text, writer_summary, num_pages=4)
 
     st.write("Comic book generated successfully!")
 
