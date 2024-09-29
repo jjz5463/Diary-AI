@@ -9,9 +9,7 @@ import os
 
 # Utilize the Google Cloud Vision API to recognize text in the
 # input input_images (diary input_images), https://cloud.google.com/vision.
-def detect_text_in_image(image_path, credentials_path):
-    # Load the service account key from the credentials JSON file
-    credentials = service_account.Credentials.from_service_account_file(credentials_path)
+def detect_text_in_image(image_path, credentials):
 
     # Create a Vision API client using the credentials
     client = vision.ImageAnnotatorClient(credentials=credentials)
