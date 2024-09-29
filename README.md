@@ -1,6 +1,6 @@
 ---
 title: Diary-AI
-emoji: 
+emoji: 😃
 colorFrom: red
 colorTo: blue
 sdk: streamlit
