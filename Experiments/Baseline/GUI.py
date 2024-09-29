@@ -56,6 +56,10 @@ if uploaded_diary and uploaded_writer_image:
     # Assuming generated images are saved as 'comic_book/page_1.png', 'comic_book/page_2.png', etc.
     image_files = sorted(glob.glob("comic_book/page_*.png"))  # Find all the generated comic book pages
 
-    for image_file in image_files:
-        # Display each comic book page
-        st.image(image_file, caption=image_file.split('/')[-1], use_column_width=True)
+    # Display images in 2 columns
+    cols = st.columns(2)  # Create two columns for the images
+
+    for i, image_file in enumerate(image_files):
+        with cols[i % 2]:  # Alternate between the two columns
+            # Display each comic book page in the respective column
+            st.image(image_file, caption=image_file.split('/')[-1], use_column_width=True)
