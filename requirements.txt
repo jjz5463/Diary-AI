@@ -1,0 +1,6 @@
+openai
+google-cloud-vision
+google-auth
+google-generativeai
+diffusers
+torch
