@@ -5,6 +5,7 @@ from PIL import Image
 from google.oauth2 import service_account
 from baseline_utils import detect_text_in_image, summarize_diary_text, analyze_writer_image, generate_comic_book
 import glob
+import os
 
 # Load secrets
 openai_api_key = st.secrets["general"]["openai_api_key"]
@@ -30,9 +31,9 @@ if uploaded_diary and uploaded_writer_image:
     writer_image = Image.open(uploaded_writer_image)
 
     # Save the file-like objects as image files (optional if needed)
-    diary_image_path = "temp_diary_image.png"
-    writer_image_path = "temp_writer_image.png"
-
+    diary_image_path = "temp_upload_images/temp_diary_image.png"
+    writer_image_path = "temp_upload_images/temp_writer_image.png"
+    os.makedirs("temp_upload_images", exist_ok=True)
     diary_image.save(diary_image_path)
     writer_image.save(writer_image_path)
 
