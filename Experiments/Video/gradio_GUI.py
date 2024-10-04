@@ -2,7 +2,7 @@ import gradio as gr
 import openai
 import json
 from google.oauth2 import service_account
-from baseline_utils import detect_text_in_image, summarize_diary_text, analyze_writer_image, generate_video, break_summary_to_activities
+from baseline_utils import detect_text_in_image, analyze_writer_image, generate_video, break_summary_to_activities
 import os
 from keys.keys import *
 
@@ -32,8 +32,7 @@ def process_images(diary_image, writer_image):
     # Detect text from the diary image
     google_credentials = get_google_credentials()
     detected_text = detect_text_in_image(diary_image_path, google_credentials)
-    summarized_text = summarize_diary_text(detected_text, openai_api_key)
-    activities = break_summary_to_activities(summarized_text, openai_api_key)
+    activities = break_summary_to_activities(detected_text, openai_api_key)
     activity_list = activities.strip('[]').split(', ')
 
     # Analyze the writer's image using Gemini API

@@ -7,6 +7,7 @@ import torch
 from diffusers.utils import export_to_video
 import numpy as np
 import os
+import spaces
 
 
 # Utilize the Google Cloud Vision API to recognize text in the
@@ -34,27 +35,6 @@ def detect_text_in_image(image_path, credentials):
     return texts[0].description if texts else ''
 
 
-# Utilize the PaLM 2 Bison for Text model to conduct NLP tasks such as
-# text summarization and condensing on the diary text, https://ai.google.dev/palm_docs/palm.
-def summarize_diary_text(text, api_key):
-    # Initialize the OpenAI client
-    client = openai.Client(api_key=api_key)
-
-    # Use the client to call the chat completion API
-    response = client.chat.completions.create(
-        model="gpt-4",  # Use GPT-4
-        messages=[
-            {"role": "user", "content": f"Summarize the following diary entry: {text}"}
-        ],
-        max_tokens=150,
-        temperature=0.7,
-        n=1  # Number of completions to generate
-    )
-
-    # Extract the summary from the response
-    return response.choices[0].message.content
-
-
 def break_summary_to_activities(text, api_key):
     # Initialize the OpenAI client
     client = openai.Client(api_key=api_key)
@@ -63,12 +43,13 @@ def break_summary_to_activities(text, api_key):
     response = client.chat.completions.create(
         model="gpt-4",  # Use GPT-4
         messages=[
-            {"role": "user", "content": f"Please break the following summary into four distinct activities, "
-                                        f"formatted as 'I am [activity].' Each activity should describe a unique action "
-                                        f"and be less than six words: {text}. "
-                                        f"Return the four activities as a list in this "
-                                        f"format: [activity1, activity2, activity3, activity4], "
-                                        f"without any quotation marks or extra text."}
+            {"role": "user",
+             "content": f"Please break the following diary into exactly four most important activities. "
+                        f"Each activity must be formatted as 'I am [activity]' and must describe only one specific action. "
+                        f"Make sure each activity is distinct and only contains a single action (e.g., no combinations like 'eating and teaching'). "
+                        f"Additionally, each activity should be no more than six words: {text}. "
+                        f"Return the four activities as a list in the following format: "
+                        f"[activity1, activity2, activity3, activity4], without any quotation marks, extra text, or explanations."}
         ],
         max_tokens=150,
         temperature=0.7,
@@ -88,13 +69,15 @@ def analyze_writer_image(image_path, api_key):
     model = genai.GenerativeModel("gemini-1.5-flash")
     myfile = genai.upload_file(image_path)
     result = model.generate_content(
-        [myfile, "\n\n",
+        [myfile,
          "Provide a description of the people in the picture, "
-         "focusing on their characteristics. Keep it under five words."]
+         "focusing on their characteristics. Keep it under two words "
+         "and ensure the description does not contain any line breaks, extra spaces, or unnecessary characters at the end."]
     )
     return result.text
 
 
+@spaces.GPU
 def generate_video(activity_list, writer_summary, fps=24):  # Lower fps
     # Load the Zeroscope video generation model
     pipe = DiffusionPipeline.from_pretrained(
