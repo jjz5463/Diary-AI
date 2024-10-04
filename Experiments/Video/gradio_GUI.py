@@ -41,14 +41,17 @@ def process_images(diary_image, writer_image):
     # Generate the video based on the summaries
     video_paths = generate_video(activity_list, writer_summary, fps=24)
 
-    return video_paths
+    return video_paths, activity_list
 
 
 # Define the Gradio interface
 def gradio_interface(diary_image, writer_image):
     # Process the images and generate the video
-    generated_videos = process_images(diary_image, writer_image)
-    return generated_videos
+    video_paths, prompts = process_images(diary_image, writer_image)
+
+    # Return the paths and corresponding prompts
+    return video_paths[0], prompts[0], video_paths[1], prompts[1], video_paths[2], prompts[2], video_paths[3], prompts[
+        3]
 
 
 # Set up the Gradio interface
@@ -64,14 +67,26 @@ with gr.Blocks() as interface:
     with gr.Row():
         with gr.Column():
             video_output_1 = gr.Video(label="Generated Video 1")
+            prompt_output_1 = gr.Markdown(label="Prompt for Video 1")
+        with gr.Column():
             video_output_2 = gr.Video(label="Generated Video 2")
+            prompt_output_2 = gr.Markdown(label="Prompt for Video 2")
+
+    with gr.Row():
         with gr.Column():
             video_output_3 = gr.Video(label="Generated Video 3")
+            prompt_output_3 = gr.Markdown(label="Prompt for Video 3")
+        with gr.Column():
             video_output_4 = gr.Video(label="Generated Video 4")
+            prompt_output_4 = gr.Markdown(label="Prompt for Video 4")
 
+    # Bind the submit button click to trigger the video generation and display
     submit_button.click(fn=gradio_interface,
                         inputs=[diary_image_input, writer_image_input],
-                        outputs=[video_output_1, video_output_2, video_output_3, video_output_4])
+                        outputs=[video_output_1, prompt_output_1,
+                                 video_output_2, prompt_output_2,
+                                 video_output_3, prompt_output_3,
+                                 video_output_4, prompt_output_4])
 
 # Launch the interface
 interface.launch()
