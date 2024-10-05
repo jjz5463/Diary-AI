@@ -2,7 +2,11 @@ import gradio as gr
 import openai
 import json
 from google.oauth2 import service_account
-from baseline_utils import detect_text_in_image, analyze_writer_image, generate_video, break_summary_to_activities
+from baseline_utils import (detect_text_in_image,
+                            analyze_writer_image,
+                            generate_video,
+                            break_diary_to_scenes,
+                            scenes_caption)
 import os
 from keys.keys import *
 
@@ -32,16 +36,20 @@ def process_images(diary_image, writer_image):
     # Detect text from the diary image
     google_credentials = get_google_credentials()
     detected_text = detect_text_in_image(diary_image_path, google_credentials)
-    activities = break_summary_to_activities(detected_text, openai_api_key)
-    activity_list = activities.strip('[]').split(', ')
 
     # Analyze the writer's image using Gemini API
     writer_summary = analyze_writer_image(writer_image_path, gemini_api_key)
 
-    # Generate the video based on the summaries
-    video_paths = generate_video(activity_list, writer_summary, fps=24)
+    scenes = break_diary_to_scenes(detected_text, writer_summary, openai_api_key)
+    scene_list = [scene.strip() for scene in scenes.split("Scene")[1:]]
+    scene_list = [scene.split(": ", 1)[1] for scene in scene_list]
 
-    return video_paths, activity_list
+    # Generate the video based on the summaries
+    video_paths = generate_video(scene_list, fps=24)
+
+    captions = scenes_caption(scene_list, openai_api_key)
+
+    return video_paths, captions
 
 
 # Define the Gradio interface

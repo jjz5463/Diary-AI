@@ -8,3 +8,4 @@ streamlit
 transformers
 accelerate
 moviepy
+SentencePiece
