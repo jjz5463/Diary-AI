@@ -152,7 +152,7 @@ def generate_video(scene_list, fps=24):  # Lower fps
         video = pipe(
             prompt=prompt,
             num_videos_per_prompt=1,
-            num_inference_steps=50,
+            num_inference_steps=40,
             num_frames=49,
             guidance_scale=6,
             generator=torch.Generator(device=device).manual_seed(42),

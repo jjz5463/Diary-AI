@@ -2,7 +2,7 @@
 import openai
 import json
 from google.oauth2 import service_account
-from baseline_utils import detect_text_in_image, analyze_writer_image, break_diary_to_scenes, scenes_caption
+from baseline_utils import detect_text_in_image, analyze_writer_image, break_diary_to_scenes, scenes_caption, generate_video
 from keys.keys import *
 
 # Load secrets from the environment or other sources (adjust as needed)
@@ -37,4 +37,6 @@ scene_list = [scene.split(": ", 1)[1] for scene in scene_list]
 
 captions = scenes_caption(scene_list, openai_api_key)
 
-print(captions)
+#video_paths = generate_video(scene_list, fps=24)
+
+print(scene_list)
