@@ -8,11 +8,13 @@ from baseline_utils import (detect_text_in_image,
                             break_diary_to_scenes,
                             scenes_caption)
 import os
+from keys.keys import *
 
-# Load secrets from Hugging Face Spaces environment
-openai_api_key = os.getenv("OPENAI_API_KEY")
-google_service_account_info = json.loads(os.getenv("GOOGLE_SERVICE_ACCOUNT"))
-gemini_api_key = os.getenv("GEMINI_API_KEY")
+# Load secrets from the environment or other sources (adjust as needed)
+openai_api_key = open_ai_keys
+with open('keys/service_account_credentials.json') as f:
+    google_service_account_info = json.load(f)
+gemini_api_key = gemini_keys
 
 # Initialize OpenAI
 openai.api_key = openai_api_key
@@ -38,16 +40,16 @@ def process_images(diary_image, writer_image):
     # Analyze the writer's image using Gemini API
     writer_summary = analyze_writer_image(writer_image_path, gemini_api_key)
 
-    scenes = break_diary_to_scenes(detected_text, openai_api_key)
+    scenes = break_diary_to_scenes(detected_text, writer_summary, openai_api_key)
     scene_list = [scene.strip() for scene in scenes.split("Scene")[1:]]
     scene_list = [scene.split(": ", 1)[1] for scene in scene_list]
 
     # Generate the video based on the summaries
-    video_path = generate_video(scene_list, writer_summary, fps=24)
+    video_paths = generate_video(scene_list, fps=24)
 
-    caption = scenes_caption(scene_list, openai_api_key)
+    captions = scenes_caption(scene_list, openai_api_key)
 
-    return video_path, caption
+    return video_paths, captions
 
 
 # Define the Gradio interface
@@ -56,7 +58,8 @@ def gradio_interface(diary_image, writer_image):
     video_paths, prompts = process_images(diary_image, writer_image)
 
     # Return the paths and corresponding prompts
-    return video_paths, prompts
+    return video_paths[0], prompts[0], video_paths[1], prompts[1], video_paths[2], prompts[2], video_paths[3], prompts[
+        3]
 
 
 # Set up the Gradio interface
@@ -64,23 +67,34 @@ with gr.Blocks() as interface:
     gr.Markdown("# Handwritten Diary to Video")
 
     with gr.Row():
-        # Left column for user inputs
-        with gr.Column():
-            diary_image_input = gr.Image(label="Upload your handwritten diary image", type="pil")
-            writer_image_input = gr.Image(label="Upload a photo of the writer", type="pil")
-            submit_button = gr.Button("Generate Video")
+        diary_image_input = gr.Image(label="Upload your handwritten diary image", type="pil")
+        writer_image_input = gr.Image(label="Upload a photo of the writer", type="pil")
 
-        # Right column for generated video and caption
+    submit_button = gr.Button("Generate Videos")
+
+    with gr.Row():
         with gr.Column():
-            video_output = gr.Video(label="Generated Video")
-            caption_output = gr.Markdown(label="Scene Caption")
+            video_output_1 = gr.Video(label="Generated Video 1")
+            prompt_output_1 = gr.Markdown(label="Prompt for Video 1")
+        with gr.Column():
+            video_output_2 = gr.Video(label="Generated Video 2")
+            prompt_output_2 = gr.Markdown(label="Prompt for Video 2")
+
+    with gr.Row():
+        with gr.Column():
+            video_output_3 = gr.Video(label="Generated Video 3")
+            prompt_output_3 = gr.Markdown(label="Prompt for Video 3")
+        with gr.Column():
+            video_output_4 = gr.Video(label="Generated Video 4")
+            prompt_output_4 = gr.Markdown(label="Prompt for Video 4")
 
     # Bind the submit button click to trigger the video generation and display
-    submit_button.click(
-        fn=gradio_interface,
-        inputs=[diary_image_input, writer_image_input],
-        outputs=[video_output, caption_output]
-    )
+    submit_button.click(fn=gradio_interface,
+                        inputs=[diary_image_input, writer_image_input],
+                        outputs=[video_output_1, prompt_output_1,
+                                 video_output_2, prompt_output_2,
+                                 video_output_3, prompt_output_3,
+                                 video_output_4, prompt_output_4])
 
 # Launch the interface
 interface.launch()
