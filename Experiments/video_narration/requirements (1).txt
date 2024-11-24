@@ -1,0 +1,13 @@
+openai
+google-cloud-vision
+google-auth
+google-generativeai
+diffusers
+torch
+streamlit
+transformers
+accelerate
+moviepy
+SentencePiece
+elevenlabs
+Transformers
