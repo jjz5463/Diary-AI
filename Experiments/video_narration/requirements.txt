@@ -10,4 +10,4 @@ accelerate
 moviepy
 SentencePiece
 elevenlabs
-Transformers
+transformers
